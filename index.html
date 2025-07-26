@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>성격과 라이프스타일로 알아보는 나와 맞는 지역 특산물은?</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel = "stylesheet" href="서비스_css.css">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Helvetica Neue', sans-serif;
+      background-color: #f9f9f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      padding: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .question {
+      font-size: 1.2rem;
+      margin-bottom: 30px;
+      line-height: 1.5;
+    }
+
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    button {
+      padding: 15px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background-color: #f0f0f0;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #e0e0e0;
+    }
+
+    #result-container h2 {
+      margin-bottom: 20px;
+    }
+
+    /* ✅ 진행률 바 */
+    .progress-container {
+      width: 100%;
+      height: 12px;
+      background-color: #e0e0e0;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 25px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background-color: #4caf50;
+      transition: width 0.3s ease;
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        padding: 30px 15px;
+      }
+
+      .question {
+        font-size: 1rem;
+      }
+
+      button {
+        padding: 12px;
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div id="container">
+
+    <!-- ✅ 1. 시작 인트로 화면 -->
+    <div class="card" id="intro-container">
+      <h2>성격과 라이프스타일 기반의<br>나와 어울리는 지역 특산물은?</h2>
+      <p style="margin: 20px 0 30px;">당신의 성향을 닮은 ‘지역 특산물’을 찾아 <br> 그곳으로 여행을 떠나보는 건 어떨까요? </p>
+      <img id="startImage" src="1. 시작화면.png" alt="테스트 이미지" style="width:300px; height:auto;"/>
+   <div style="text-align: center;">
+      <button onclick="startTest()">시작하기</button>
+    </div>
+ </div>
+
+    <!-- ✅ 2. 설문 질문 화면 -->
+    <div class="card" id="survey-container" style="display:none;">
+      <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+      <div id="question-text" class="question"></div>
+      <div class="button-group">
+        <button id="btnA"></button>
+        <button id="btnB"></button>
+      </div>
+    </div>
+
+    <!-- ✅ 3. 결과 화면 -->
+    <div class="card" id="result-container" style="display:none; text-align: center; ">
+      <div id="result-text" style="font-size: 1.2rem;"></div>
+      <img id="result-image" src="" alt="추천 이미지" style="margin-top: 20px; width: 250px; height: auto; display: none;" />
+      <div id="result-description" style="white-space: pre-wrap; margin-top: 25px; font-size: 1rem; line-height: 1.6;"></div>
+      <div id="travel-link-container" style="margin-top: 25px;"></div>
+     
+     </div>
+    </div>
+
+  </div>
+
+  <script>
+    const questions = [
+      { text: "1. 새로운 모임에 참석하게 된 당신", a: "a. 새로운 사람들과 금방 친해진다", b: "b. 낯을 가리지만 익숙해지면 편해진다" },
+      { text: "2. 자유 시간에 당신은", a: "a. 혼자서 영화나 유튜브를 본다", b: "b. 밖에 나가 산책하거나 운동한다" },
+      { text: "3. 새로운 도전 앞에서 당신은?", a: "a. 흥미를 느끼며 과감히 도전한다", b: "b. 안정적인 선택을 선호한다" },
+      { text: "4. 해야 할 일이 많을 때", a: "a. 계획을 세워 차근차근 처리한다", b: "b. 눈에 띄는 것부터 처리한다" },
+      { text: "5. 주변 사람들에게 당신은?", a: "a. 고민을 들어주는 조언자", b: "b. 고민을 털어놓는 스타일" },
+      { text: "6. 실수 후 당신은?", a: "a. 금방 잊는다", b: "b. 계속 떠올라서 잠들기 힘들다" },
+      { text: "7. SNS에서 빠르게 확산되는 트렌드를", a: "a. 새로운 트렌드에 민감하다", b: "b. 필요할 때 찾아보는 편이다" },
+      { text: "8. 친구와 약속이 취소되면", a: "a. 아쉽지만 금세 다른 계획을 만든다", b: "b. 오히려 좋아! 혼자만의 시간이 생겨서 기쁘다" }
+    ];
+
+    const profiles = {
+      "제주 감귤": {1:"a", 2:"a", 3:"b", 4:"a", 5:"a", 6:"b", 7:"b", 8:"b"},
+      "가평 잣": {1:"b", 2:"a", 3:"b", 4:"a", 5:"a", 6:"a", 7:"b", 8:"b"},
+      "이천 쌀": {1:"b", 2:"b", 3:"a", 4:"a", 5:"a", 6:"a", 7:"b", 8:"b"},
+      "양양 송이": {1:"a", 2:"b", 3:"b", 4:"a", 5:"b", 6:"b", 7:"b", 8:"a"},
+      "영월 곤드레": {1:"b", 2:"a", 3:"b", 4:"a", 5:"a", 6:"b", 7:"b", 8:"b"},
+      "보은 대추": {1:"a", 2:"a", 3:"b", 4:"a", 5:"b", 6:"a", 7:"a", 8:"a"},
+      "충주 사과": {1:"a", 2:"b", 3:"a", 4:"b", 5:"a", 6:"a", 7:"a", 8:"a"},
+      "공주 밤": {1:"b", 2:"b", 3:"b", 4:"a", 5:"b", 6:"a", 7:"a", 8:"a"},
+      "금산 인삼": {1:"b", 2:"b", 3:"b", 4:"b", 5:"a", 6:"a", 7:"b", 8:"b"},
+      "순창 고추장": {1:"b", 2:"a", 3:"b", 4:"b", 5:"a", 6:"b", 7:"b", 8:"b"},
+      "고창 복분자": {1:"b", 2:"b", 3:"a", 4:"b", 5:"b", 6:"a", 7:"a", 8:"b"},
+      "보성 녹차": {1:"b", 2:"a", 3:"b", 4:"a", 5:"a", 6:"b", 7:"a", 8:"b"},
+      "영광 굴비": {1:"b", 2:"a", 3:"b", 4:"a", 5:"a", 6:"b", 7:"b", 8:"b"},
+      "성주 참외": {1:"a", 2:"b", 3:"a", 4:"b", 5:"b", 6:"a", 7:"a", 8:"a"},
+      "의성 마늘": {1:"a", 2:"b", 3:"a", 4:"a", 5:"a", 6:"a", 7:"a", 8:"b"},
+      "기장 쪽파": {1:"a", 2:"b", 3:"a", 4:"b", 5:"b", 6:"a", 7:"b", 8:"a"}
+    };
+
+      const descriptions = {
+      "제주 감귤":`제주 감귤은 화산토와 따뜻한 해풍 속에서 자라납니다. 
+돌 틈 사이로 스며든 빗물, 이른 아침 햇살까지 고스란히 품고 자라죠.
+당신도 그런 사람입니다. 부드럽고 배려 깊은 마음으로 주변을 따뜻하게 감싸며, 
+묵묵히 제 자리를 지키는 따스한 존재.
+
+감귤향 가득한 제주 귤밭 사이를 걸어보는 건 어떨까요?`,
+      "가평 잣": `가평 잣은 높은 산에 둘러싸인 쾌적한 산림에서 자랍니다.
+습기에 약한 잣나무는 배수가 잘 되는 땅에서 천천히, 단단하게 성장하죠.
+당신도 겉으로는 조용하고 차분해 보이지만, 속은 단단하고 흔들림이 없습니다.
+
+가평의 숲속에서, 고요한 자연의 속도에 잠시 몸을 맡겨보는 건 어떨까요?`,
+      "이천 쌀": `이천 쌀은 풍부한 일조량과 적절한 강우량 속에서 자랍니다.
+비옥한 평야에서 균형 잡힌 자연의 힘을 받아, 고슬고슬하고 깊은 맛을 내죠.
+당신도 묵묵히 제 할 일을 해내며, 주변에 믿음과 안정감을 주는 사람입니다.
+
+바람에 넘실거리는 이천의 벼 이랑 사이에서,
+당신의 삶도 단단히 익어가고 있음을 느껴보는 건 어떨까요?`,
+      "양양 송이": `양양 송이는 사람의 손길이 쉽게 닿지 않는 깊은 숲에서 천천히 자랍니다.
+
+자연 그대로의 공기와 시간 속에서, 조용히 자기만의 향을 만들어가죠.
+당신도 빠르진 않지만 흔들림 없이, 내면의 가치를 묵묵히 빚어가는 사람입니다.
+
+양양의 숲길을 따라 천천히 걷다 보면, 
+송이의 향처럼 깊은 위로를 마주하게 될지도 몰라요`,
+      "영월 곤드레": `영월 곤드레는 5월~6월, 짧은 봄날에만 수확할 수 있는 특별한 나물입니다.
+높은 고지대의 청정 자연 속에서 자라, 향은 은은하고, 맛은 담백하죠.
+당신도 묵묵히 곁을 지켜주며, 주변에 안정감과 평온함을 선사하는 존재입니다.
+언제나 자연스럽게, 자기만의 색을 잃지 않고 조용한 매력을 쌓아갑니다.
+
+햇살이 부드럽게 깔린 봄날, 
+영월의 산길을 따라 곤드레 향 가득한 들판을 걸어보는 건 어떨까요? `,
+      "보은 대추": `충북 보은, 속리산 자락의 맑은 공기와 비옥한 토양에서 자란 대추는
+풍부한 햇살과 큰 일교차를 견디며 천천히, 단단하게 익어갑니다.
+당신도 겉으로는 조용하고 차분하지만,
+속에는 따뜻함과 깊이를 품고 있어 한 번 가까워지면 오래도록 믿음을 주는 존재예요.
+
+이번 여행, 보은의 대추밭을 걸으며 차분한 위로와 안정감을 느껴보는 건 어떨까요?`,
+      "충주 사과": `충주 사과는 일교차가 크고 일조량이 풍부한 분지에서 자랍니다.
+선명한 빛깔, 풍부한 향, 높은 당도를 자랑하죠. 당신도 그런 사람입니다.
+맑고 따뜻한 태도로 주변을 밝히고, 변화 속에서도 중심을 지키는 사람.
+
+선선한 가을 햇살 아래, 충주의 사과밭을 걸어보는 건 어떨까요?.`,
+      "공주 밤": `공주 밤은 일교차가 큰 지역에서 천천히 자랍니다.
+덕분에 당도는 높고, 저장성도 뛰어나 오래도록 변치 않는 품질을 자랑하죠.
+당신도 그렇습니다. 쉽게 드러내지 않지만, 깊은 신뢰를 주는 존재입니다.
+
+공주의 고요한 가을이 당신에게 딱 맞는 온도입니다.
+한적한 밤나무 길을 걸으며 잊고 있던 여유와 따뜻함을 즐겨보는 건 어떨까요?`,
+      "금산 인삼": `산지와 맑은 기운이 가득한 자연환경에서 자라는 
+금산 인삼은 시간이 흐를수록 더욱 깊은 향과 진가를 드러냅니다. 
+당신도 주변에 치유와 안정감을 선사하는 존재입니다.
+
+금산의 푸른 산길을 거닐며 고요한 자연과 함께 깊은 내면의 힘을 다시 느껴보세요.
+그곳에서 당신의 삶도 한층 더 단단해질 것입니다.`,
+      "순창 고추장": `순창 고추장은 시간이 빚어낸 깊은 풍미로 유명합니다.
+석회암 지대를 흐르는 맑은 물과 발효에 완벽한 기후,
+그리고 옛 방식 그대로 이어온 발효 기술이 그 특별함의 비밀이죠. 
+당신도 자신만의 속도로 삶을 발효시키고 있습니다.
+빠르진 않아도, 깊고 오래 가는 내공을 가진 사람. 
+
+순창의 고즈넉한 마을을 걷다 보면, 오래된 고추장 담그는 가마솥 곁에서
+당신의 내면 깊이 쌓인 이야기를 떠올려 보는 건 어떨까요?`,
+      "고창 복분자": `고창의 비옥한 황토지대와 서해의 청정 해풍이 만나, 
+복분자에 영양과 독특한 향을 선사합니다. 다양한 전통주와 식품으로 사랑받듯, 
+당신도 다채로운 삶의 영역에서 빛나며, 사람들과 따뜻한 교감을 나누는 사람입니다.
+
+고창의 황토밭과 바람결 따라 걸으며,
+당신만의 건강한 에너지와 깊은 내면을 만나보는 건 어떨까요?
+`,
+      "보성 녹차": `보성의 따뜻한 해양성 기후와 풍부한 섬진강 물, 
+그리고 깊고 배수가 좋은 토양이 보성 녹차의 깊고 진한 맛과 향을 만들어냅니다. 
+복잡한 세상 속에서도 여유를 잃지 않고 자연과 조화를 이루며 자신을 아끼는 당신은,
+보성 녹차밭의 싱그러운 푸름처럼 늘 신선한 에너지를 발산합니다.
+
+보성의 녹차밭 사이를 거닐며,
+부드러운 차향과 함께 흐르는 고요한 시간을 느껴보는건 어떨까요?`,
+      "영광 굴비": `영광의 바닷바람과 따스한 햇살, 그리고 1년 넘게 간수를 뺀 천일염이 만나
+깊은 맛의 굴비가 탄생합니다. 당신은 내면이 깊고 섬세하며 혼자만의 시간도 잘 보냅니다. 
+안정감과 신중함이 큰 매력인 당신은 바다의 깊은 맛을 닮은 영광 굴비와 잘 어울립니다.
+
+탁 트인 바다를 걷다 보면, 당신의 섬세하고 진중한 매력이
+굽어치는 파도처럼 천천히 마음에 스며들 거예요.`,
+      "성주 참외": `경북 내륙, 일조량이 가득한 성주에서 자란 참외는
+맑고 깨끗한 토양에서 단단히 자랍니다. 아삭하고 달콤한 맛이 있죠.
+
+성주의 햇살 가득한 참외 밭을 거닐며,
+당신의 밝고 상큼한 에너지를 다시 한번 느껴보는건 어떨까요?`,
+      "의성 마늘": `의성은 맑고 깨끗한 혈암 토양과 풍부한 미네랄과
+크고 작은 일교차가 뚜렷한 기후 덕분에 튼튼하고 영양 가득한 마늘을 키워냅니다. 
+마치 의성 마늘처럼, 풍부한 영양과 힘으로 주변에 활력을 불어넣는 당신입니다.
+
+바람이 부는 의성 들판을 걸으며, 튼튼하게 자라난 마늘밭 사이를 누비다 보면
+당신의 내면에 숨겨진 강인함과 지혜가 더욱 빛나는 것을 느낄 수 있을 겁니다.
+`,
+      "기장 쪽파": `기장의 비옥한 황토와 사철 부는 바닷바람이 만나 
+향이 진하고 당도 높은 쪽파가 자랍니다.
+봄철 나른해지기 쉬운 몸과 마음에 활력을 불어넣는, 
+생기 넘치는 기장 쪽파처럼 당신도 주변을 밝히는 에너지 넘치는 사람입니다.
+
+기장의 푸른 들판과 바닷바람 속에서
+싱그러운 쪽파 향을 맡으며 활기찬 에너지를 한번 느껴보는건 어떨까요?`
+    };
+
+   const travelLinks = {
+      "제주 감귤": "https://travel.naver.com/domestic/14110/summary?seasonIndex=1",
+      "가평 잣": "https://travel.naver.com/domestic/02820/summary?seasonIndex=1",
+      "이천 쌀": "https://travel.naver.com/domestic/02500/summary?seasonIndex=1",
+      "양양 송이": "https://travel.naver.com/domestic/01830/summary?seasonIndex=1",
+      "영월 곤드레": "https://travel.naver.com/domestic/01750/summary?seasonIndex=1",
+      "보은 대추": "https://travel.naver.com/domestic/16720/summary?seasonIndex=1",
+      "충주 사과": "https://travel.naver.com/domestic/16130/summary?seasonIndex=1",
+      "공주 밤": "https://travel.naver.com/domestic/15150/summary?seasonIndex=1",
+      "금산 인삼": "https://travel.naver.com/domestic/15710/summary?seasonIndex=1",
+      "순창 고추장": "https://travel.naver.com/domestic/13770/summary?seasonIndex=1",
+      "고창 복분자": "https://travel.naver.com/domestic/13790/summary?seasonIndex=1",
+      "보성 녹차": "https://travel.naver.com/domestic/12780/summary?seasonIndex=1",
+      "영광 굴비": "https://travel.naver.com/domestic/12870/summary?seasonIndex=1",
+      "성주 참외": "https://travel.naver.com/domestic/04840/summary?seasonIndex=1",
+      "의성 마늘": "https://travel.naver.com/domestic/04730/summary?seasonIndex=1",
+      "기장 쪽파": "https://travel.naver.com/domestic/08710/summary?seasonIndex=1"
+    };
+
+   const regionNames = {
+      "제주 감귤": "제주 제주시",
+      "가평 잣": "경기 가평시",
+      "이천 쌀": "경기 이천시",
+      "양양 송이": "강원 양양시",
+      "영월 곤드레": "강원 영월시",
+      "보은 대추": "충북 보은시",
+      "충주 사과": "충북 충주시",
+      "공주 밤": "충남 공주시",
+      "금산 인삼": "충남 금산시",
+      "순창 고추장": "전북 순창시",
+      "고창 복분자": "전북 고창시",
+      "보성 녹차": "전남 보성시",
+      "영광 굴비": "전남 영광시",
+      "성주 참외": "경북 성주시",
+      "의성 마늘": "경북 의성시",
+      "기장 쪽파": "부산 기장시"
+    };
+
+    let currentIndex = 0;
+    const answers = [];
+
+    const questionTextEl = document.getElementById("question-text");
+    const btnA = document.getElementById("btnA");
+    const btnB = document.getElementById("btnB");
+    const surveyContainer = document.getElementById("survey-container");
+    const resultContainer = document.getElementById("result-container");
+    const resultText = document.getElementById("result-text");
+    const resultDescription = document.getElementById("result-description");
+    const progressBar = document.getElementById("progress-bar");
+
+    function showQuestion(index) {
+      const q = questions[index];
+      questionTextEl.textContent = q.text;
+      btnA.textContent = q.a;
+      btnB.textContent = q.b;
+
+      // ✅ 진행률 바 업데이트
+      const percent = Math.floor((index / questions.length) * 100);
+      progressBar.style.width = percent + "%";
+    }
+
+    btnA.addEventListener("click", () => handleAnswer("a"));
+    btnB.addEventListener("click", () => handleAnswer("b"));
+
+    function handleAnswer(choice) {
+      answers.push(choice);
+      currentIndex++;
+      if (currentIndex < questions.length) {
+        showQuestion(currentIndex);
+      } else {
+        showResult();
+      }
+    }
+
+    function getAnswerMap(answers) {
+      const map = {};
+      for (let i = 0; i < answers.length; i++) {
+        map[i + 1] = answers[i];
+      }
+      return map;
+    }
+
+    function toBinaryVector(answerMap) {
+      return Object.values(answerMap).map(ans => ans === 'a' ? 1 : 0);
+    }
+
+    function cosineSimilarity(vec1, vec2) {
+      const dot = vec1.reduce((sum, val, i) => sum + val * vec2[i], 0);
+      const mag1 = Math.sqrt(vec1.reduce((sum, val) => sum + val * val, 0));
+      const mag2 = Math.sqrt(vec2.reduce((sum, val) => sum + val * val, 0));
+      if (mag1 === 0 || mag2 === 0) return 0;
+      return dot / (mag1 * mag2);
+    }
+
+    function recommendCosine(answers) {
+      const userMap = getAnswerMap(answers);
+      const userVec = toBinaryVector(userMap);
+
+      let bestMatch = null;
+      let bestScore = -1;
+
+      for (const [region, profileMap] of Object.entries(profiles)) {
+        const profileVec = toBinaryVector(profileMap);
+        const similarity = cosineSimilarity(userVec, profileVec);
+
+        if (similarity > bestScore) {
+         bestScore = similarity;
+         bestMatch = region;
+        }
+      }
+
+      return bestMatch;
+    } 
+    function showResult() {
+      surveyContainer.style.display = "none";
+      resultContainer.style.display = "block";
+      progressBar.style.width = "100%";
+
+      const recommendation = recommendCosine(answers);
+      resultText.innerHTML = `👉 당신은 <strong>${recommendation}</strong> 같은 사람이에요!`;
+
+      const imageEl = document.getElementById("result-image");
+      const fileName = recommendation.replace(/\s/g, "") + "_GPT.png"; // 띄어쓰기 제거
+      imageEl.src = "img/" + fileName;
+      imageEl.style.display = "block";
+      imageEl.style.margin = "20px auto 0";  // ✅ 중앙 정렬 핵심
+      imageEl.style.width = "250px";
+      imageEl.style.height = "auto";
+
+      resultDescription.innerHTML = descriptions[recommendation];
+      
+      const displayName = recommendation;
+      const regionName = regionNames[recommendation] || recommendation;
+      const link = travelLinks[recommendation];
+      const travelLinkContainer = document.getElementById("travel-link-container");
+
+      if (link) {
+        travelLinkContainer.innerHTML = `<div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px;">
+      <a href="${link}" target="_blank" style="
+        display: inline-block;
+        padding: 12px 25px;
+        background-color: #4caf50;
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+      ">✈️ ${regionName} 여행 떠나볼까요?</a>
+
+      <button id="share-btn" style="
+          background-color: transparent;
+          border: none;
+          padding: 10px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+       " title="결과 공유하기">
+         <svg xmlns="http://www.w3.org/2000/svg"
+                 width="24" height="24"
+                 fill="none"
+                 stroke="#4caf50"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 viewBox="0 0 24 24">
+             <line x1="22" y1="2" x2="11" y2="13"></line>
+             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+       </button>
+  </div>
+`;
+
+ // ✅ 공유 버튼 리스너 바로 등록
+      const shareBtn = document.getElementById("share-btn");
+      if (navigator.share && shareBtn) {
+        shareBtn.addEventListener("click", () => {
+           navigator.share({
+             title: '나와 어울리는 지역 특산물 결과',
+             text: `👉 나는 ${displayName} 스타일! 함께 테스트해봐요!`,
+             url: window.location.href
+          }).catch(err => console.log('공유 취소됨 또는 실패:', err));
+       });
+    }
+  } else {
+  travelLinkContainer.innerHTML = "";
+  }
+}
+    function startTest() {
+      document.getElementById("intro-container").style.display = "none";
+      surveyContainer.style.display = "block";
+      showQuestion(currentIndex);
+    }
+
+  </script>
+</body>
+</html>
