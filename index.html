@@ -401,7 +401,8 @@
       imageEl.style.height = "auto";
 
       resultDescription.innerHTML = descriptions[recommendation];
-
+      
+      const displayName = recommendation;
       const regionName = regionNames[recommendation] || recommendation;
       const link = travelLinks[recommendation];
       const travelLinkContainer = document.getElementById("travel-link-container");
@@ -447,7 +448,7 @@
         shareBtn.addEventListener("click", () => {
            navigator.share({
              title: '나와 어울리는 지역 특산물 결과',
-             text: `👉 나는 ${recommendation} 스타일! 함께 테스트해봐요!`,
+             text: `👉 나는 ${displayName} 스타일! 함께 테스트해봐요!`,
              url: window.location.href
           }).catch(err => console.log('공유 취소됨 또는 실패:', err));
        });
