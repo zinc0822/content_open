@@ -375,7 +375,85 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
 
     function toBinaryVector(answerMap) {
-      return Object.values(answerMap).map(ans => ans === 'a' ? 1 : 0);
+            return Object.values(answerMap).map(ans => ans === 'a' ? 1 : 0);
+    }
+
+    function cosineSimilarity(vec1, vec2) {
+      const dot = vec1.reduce((sum, val, i) => sum + val * vec2[i], 0);
+      const mag1 = Math.sqrt(vec1.reduce((sum, val) => sum + val * val, 0));
+      const mag2 = Math.sqrt(vec2.reduce((sum, val) => sum + val * val, 0));
+      if (mag1 === 0 || mag2 === 0) return 0;
+      return dot / (mag1 * mag2);
+    }
+
+    function recommendCosine(answers) {
+      const userMap = getAnswerMap(answers);
+      const userVec = toBinaryVector(userMap);
+
+      let bestMatch = null;
+      let bestScore = -1;
+
+      for (const [region, profileMap] of Object.entries(profiles)) {
+        const profileVec = toBinaryVector(profileMap);
+        const similarity = cosineSimilarity(userVec, profileVec);
+
+        if (similarity > bestScore) {
+         bestScore = similarity;
+         bestMatch = region;
+        }
+      }
+
+      return bestMatch;
+    } 
+    function showResult() {
+      surveyContainer.style.display = "none";
+      resultContainer.style.display = "block";
+      progressBar.style.width = "100%";
+
+      const recommendation = recommendCosine(answers);
+      resultText.innerHTML = `👉 당신은 <strong>${recommendation}</strong> 같은 사람이에요!`;
+
+      const imageEl = document.getElementById("result-image");
+      const fileName = recommendation.replace(/\s/g, "") + "_GPT.png"; // 띄어쓰기 제거
+      imageEl.src = "img/" + fileName;
+      imageEl.style.display = "block";
+      imageEl.style.margin = "20px auto 0";  // ✅ 중앙 정렬 핵심
+      imageEl.style.width = "250px";
+      imageEl.style.height = "auto";
+
+      resultDescription.innerHTML = descriptions[recommendation];
+      
+      const displayName = recommendation;
+      const regionName = regionNames[recommendation] || recommendation;
+      const link = travelLinks[recommendation];
+      const travelLinkContainer = document.getElementById("travel-link-container");
+
+      if (link) {
+        travelLinkContainer.innerHTML = `<div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px;">
+      <a href="${link}" target="_blank" style="
+        display: inline-block;
+        padding: 12px 25px;
+        background-color: #4caf50;
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+      ">✈️ ${regionName} 여행 떠나볼까요?</a>
+
+      <button id="share-btn" style="
+          background-color: transparent;
+          border: none;
+          padding: 10px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+       " title="결과 공유하기">
+         <svg xmlns="http://www.w3.org/2000/svg"
+                 width="24" height="24"
+                 fill="none"
+                 stroke="#4caf50"
+                 stroke-width="2"
+                 stroke-linecap="round"
                  stroke-linejoin="round"
                  viewBox="0 0 24 24">
              <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -385,41 +463,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 `;
 
-           // 👇 클릭 추적 이벤트 추가
-          setTimeout(() => {
-            const travelBtn = document.getElementById("travel-link");
-            if (travelBtn) {
-             travelBtn.addEventListener("click", () => {
-               gtag('event', 'click_travel_link', {
-                 region: recommendation
-              });
-           });
-         }
-
  // ✅ 공유 버튼 리스너 바로 등록
-            const shareBtn = document.getElementById("share-btn");
-            if (shareBtn) {
-              shareBtn.addEventListener("click", () => {
-                gtag('event', 'click_share', {
-                  region: recommendation
-                });
-
-      
-                navigator.share({
-                  title: '나와 어울리는 지역 특산물 결과',
-                  text: `👉 나는 ${displayName} 스타일! 함께 테스트해봐요!`,
-                  url: window.location.href
-                }).catch(err => console.log('공유 취소됨 또는 실패:', err));
-              });
-            }
-          },0);    
-      } else {
-        travelLinkContainer.innerHTML = "";
-      }
-    }, 0); 
-      
+      const shareBtn = document.getElementById("share-btn");
+      if (navigator.share && shareBtn) {
+        shareBtn.addEventListener("click", () => {
+           navigator.share({
+             title: '나와 어울리는 지역 특산물 결과',
+             text: `👉 나는 ${displayName} 스타일! 함께 테스트해봐요!`,
+             url: window.location.href
+          }).catch(err => console.log('공유 취소됨 또는 실패:', err));
+       });
+    }
+  } else {
+  travelLinkContainer.innerHTML = "";
+  }
+}
     function startTest() {
-      gtag('event', 'start_test');
       document.getElementById("intro-container").style.display = "none";
       surveyContainer.style.display = "block";
       showQuestion(currentIndex);
