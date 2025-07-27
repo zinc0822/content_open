@@ -443,19 +443,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         font-weight: bold;
       ">✈️ ${regionName} 여행 떠나볼까요?</a>
 
-           // 👇 클릭 추적 이벤트 추가
-         setTimeout(() => {
-            const travelBtn = document.getElementById("travel-link");
-            if (travelBtn) {
-              travelBtn.addEventListener("click", () => {
-                gtag('event', 'click_travel_link', {
-                  region: recommendation
-                });
-              });
-            }
-          }, 0);
-        }
-
       <button id="share-btn" style="
           background-color: transparent;
           border: none;
@@ -479,13 +466,33 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 `;
 
- // ✅ 공유 버튼 리스너 바로 등록
-      const shareBtn = document.getElementById("share-btn");
-      shareBtn.addEventListener("click", () => {
-        gtag('event', 'click_share', {
-         region: displayName
-      });
+           // 👇 클릭 추적 이벤트 추가
+setTimeout(() => {
+  const travelBtn = document.getElementById("travel-link");
+  if (travelBtn) {
+   travelBtn.addEventListener("click", () => {
+     gtag('event', 'click_travel_link', {
+       region: recommendation
+     });
+    });
+  }
 
+ // ✅ 공유 버튼 리스너 바로 등록
+   const shareBtn = document.getElementById("share-btn");
+   if (shareBtn) {
+     shareBtn.addEventListener("click", () => {
+       gtag('event', 'click_share', {
+         region: recommendation
+       });
+     });
+    }
+  },0);        
+}
+
+gtag('event', 'show_result', {
+  region:recommendation
+});
+      
   navigator.share({
     title: '나와 어울리는 지역 특산물 결과',
     text: `👉 나는 ${displayName} 스타일! 함께 테스트해봐요!`,
