@@ -345,6 +345,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     btnB.addEventListener("click", () => handleAnswer("b"));
 
     function handleAnswer(choice) {
+      gtag('event', 'question_click', {
+         question: `Q${currentIndex + 1}`,
+         answer: choice
+       });
       answers.push(choice);
       currentIndex++;
       if (currentIndex < questions.length) {
@@ -399,6 +403,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       progressBar.style.width = "100%";
 
       const recommendation = recommendCosine(answers);
+       gtag('event', 'show_result', {
+         region: recommendation
+       });
       resultText.innerHTML = `👉 당신은 <strong>${recommendation}</strong> 같은 사람이에요!`;
 
       const imageEl = document.getElementById("result-image");
@@ -418,7 +425,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       if (link) {
         travelLinkContainer.innerHTML = `<div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px;">
-      <a href="${link}" target="_blank" style="
+      <a id="travel-link" href="${link}" target="_blank" style="
         display: inline-block;
         padding: 12px 25px;
         background-color: #4caf50;
@@ -427,6 +434,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         text-decoration: none;
         font-weight: bold;
       ">✈️ ${regionName} 여행 떠나볼까요?</a>
+
+           // 👇 클릭 추적 이벤트 추가
+         setTimeout(() => {
+            const travelBtn = document.getElementById("travel-link");
+            if (travelBtn) {
+              travelBtn.addEventListener("click", () => {
+                gtag('event', 'click_travel_link', {
+                  region: recommendation
+                });
+              });
+            }
+          }, 0);
+        }
 
       <button id="share-btn" style="
           background-color: transparent;
@@ -453,6 +473,18 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
  // ✅ 공유 버튼 리스너 바로 등록
       const shareBtn = document.getElementById("share-btn");
+      shareBtn.addEventListener("click", () => {
+        gtag('event', 'click_share', {
+         region: displayName
+      });
+
+  navigator.share({
+    title: '나와 어울리는 지역 특산물 결과',
+    text: `👉 나는 ${displayName} 스타일! 함께 테스트해봐요!`,
+    url: window.location.href
+  }).catch(err => console.log('공유 취소됨 또는 실패:', err));
+});
+
       if (navigator.share && shareBtn) {
         shareBtn.addEventListener("click", () => {
            navigator.share({
@@ -467,6 +499,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
 }
     function startTest() {
+      gtag('event', 'start_test');
       document.getElementById("intro-container").style.display = "none";
       surveyContainer.style.display = "block";
       showQuestion(currentIndex);
