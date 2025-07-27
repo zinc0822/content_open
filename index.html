@@ -353,10 +353,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     btnB.addEventListener("click", () => handleAnswer("b"));
 
     function handleAnswer(choice) {
-      gtag('event', 'question_click', {
-         question: `Q${currentIndex + 1}`,
-         answer: choice
-       });
       answers.push(choice);
       currentIndex++;
       if (currentIndex < questions.length) {
@@ -375,7 +371,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
 
     function toBinaryVector(answerMap) {
-            return Object.values(answerMap).map(ans => ans === 'a' ? 1 : 0);
+      return Object.values(answerMap).map(ans => ans === 'a' ? 1 : 0);
     }
 
     function cosineSimilarity(vec1, vec2) {
