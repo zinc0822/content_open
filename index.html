@@ -431,7 +431,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       window.dataLayer.push({
         event: "reach_result",
         region: recommendation,
-        cosine_score: similarity.toFixed(3)
+        cosine_score: Number(similarity.toFixed(3))
       });
       
       const displayName = recommendation;
