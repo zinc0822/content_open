@@ -407,14 +407,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }
       }
 
-      return bestMatch;
+      return {bestMatch, bestScore} ;
     } 
     function showResult() {
       surveyContainer.style.display = "none";
       resultContainer.style.display = "block";
       progressBar.style.width = "100%";
 
-      const recommendation = recommendCosine(answers);
+      const { bestMatch: recommendation, bestScore: similarity} = recommendCosine(answers);
       resultText.innerHTML = `👉 당신은 <strong>${recommendation}</strong>의 매력을 닮았어요!`;
 
       const imageEl = document.getElementById("result-image");
@@ -431,7 +431,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       window.dataLayer.push({
         event: "reach_result",
         region: recommendation,
-        cosine_score: similarityScore.toFixed(3)
+        cosine_score: similarity.toFixed(3)
       });
       
       const displayName = recommendation;
