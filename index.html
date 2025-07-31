@@ -430,7 +430,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       // ✅ GTM 이벤트: 결과 도달 시
       window.dataLayer.push({
         event: "reach_result",
-        region: recommendation
+        region: recommendation,
+        cosine_score: similarityScore.toFixed(3)
       });
       
       const displayName = recommendation;
